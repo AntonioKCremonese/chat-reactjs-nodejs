@@ -8,8 +8,7 @@ function Login() {
 
     const [mail, setMail] = useState('');
     const [password, setPassword] = useState('');
-    const [token, setToken] = useState('');
-    const auth = useSelector(state => state.auth);
+    const {auth} = useSelector(state => state.data);
     const dispatch = useDispatch();
 
     const handleSubmit = e => {
@@ -17,15 +16,21 @@ function Login() {
 
         Axios.post('http://localhost:8080/authenticate', { mail, password }, { headers: { 'Content-Type': 'application/json' } })
             .then(response => {
-                setToken(response.data.token);
-                dispatch({ type: 'AUTHENTICATED', auth: true });
+                const data = {
+                    auth:true,
+                    userId: response.data.userId
+                }
+                dispatch({ type: 'AUTHENTICATED', data});
             })
             .catch(e => {
                 console.error(e);
             })
     }
+    
     return (
-
+        
+        auth ? <Redirect to="/chat"/>:
+        (
         <Form id="chat" onSubmit={(e) => handleSubmit(e)}>
 
             <label>Email:</label> <input id="mail" name="mail" type="text" value={mail} onChange={e => setMail(e.target.value)} />
@@ -35,7 +40,7 @@ function Login() {
                 <Link to="/signup" />Não possui cadastro?
                 </p>
             <label id='error' ></label>
-        </Form>
+        </Form>)
 
     )
 }

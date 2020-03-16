@@ -1,20 +1,28 @@
-import React, { useState } from 'react';
-import io from 'socket.io-client';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Redirect } from 'react-router-dom'
-
+import io from 'socket.io-client';
+import Form from './style';
+import Axios from 'axios';
 
 function Chat() {
 
     const [username, setUsername] = useState('');
     const [message, setMessage] = useState('');
-    const [messages, setMessages] = useState([{}]);
-
+    const [messages, setMessages] = useState([]);
+    const { userId } = useSelector(state => state.data)
     const socket = io('localhost:8080');
 
     socket.on('RECEIVE_MESSAGE', data => {
         addMessage(data);
     });
+
+    useEffect(() => {
+        Axios.get(`http://localhost:8080/user/${userId}`)
+        .then(res => {
+             setUsername(res.data.name)    
+        })
+        .catch(e => console.error(e))
+    })
 
     const sendMessage = e => {
         e.preventDefault();
@@ -35,36 +43,20 @@ function Chat() {
     }
 
     return (
-    
-            <div className = "container" >
-                    <div className="row">
-                        <div className="col-4">
-                            <div className="card">
-                                <div className="card-body">
-                                    <div className="card-title">Chat Sample</div>
-                                    <hr />
-                                    <div className="messages">
-                                        {messages.map((message, idx) => {
-                                            return (
-                                                <div key={idx}>{message.author} : {message.message}</div>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-                                <div className="card-footer">
-                                    <input type="text" placeholder="Username" className="form-control" value={username} onChange={(e) => setUsername(e.target.value)} />
-                                    <br />
-                                    <input type="text" placeholder="Message" className="form-control" value={message} onChange={(e) => setMessage(e.target.value)} />
-                                    <br />
-                                    <button className="btn btn-primary form-control" onClick={(e) => sendMessage(e)}>Enviar</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-            </div>
-    
 
-            
+        <Form id="chat">
+            <input disabled id="user" type="text" name="username" placeholder="Usuário" value={username} onChange={e => setUsername(e.target.value)} />
+            <div className="messages">
+                {messages.length > 0 ? messages.map((message, idx) => {
+                    return (
+                        <strong key={idx}>{message.author} : {message.message}</strong>
+                    )
+                }) : null}
+            </div>
+            <input id="message" type="text" name="message" placeholder="Digite sua mensagem" value={message} onChange={e => setMessage(e.target.value)} />
+            <button type="submit" onClick={e => sendMessage(e)}>Enviar</button>
+        </Form>
+
     );
 }
 

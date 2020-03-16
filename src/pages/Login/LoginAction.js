@@ -1,11 +1,11 @@
 const INITIAL_STATE = {
-    auth:false
+    data:{auth:false}
 };
 
 function auth(state = INITIAL_STATE, action) {
     switch (action.type) {
         case 'AUTHENTICATED':
-            return { ...state, auth: action.auth };
+            return { ...state, data: action.data };
         default:
             return state;
     }
